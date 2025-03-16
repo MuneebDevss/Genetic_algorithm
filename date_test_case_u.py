@@ -8,85 +8,88 @@ class TestCase:
         self.isValid = isValid
 
 def fitness(testCases):
+    eachTestCaseClassCoverage = []
     valid_equivalence_classes_covered = {
-        "M1": False,  # [1, 3, 5, 7, 8, 10, 12]
-        "M2": False,  # [4, 6, 9, 11]
-        "M3": False,  # [2]
-        "D1": False,  # 1 <= day <= 28
-        "D2": False,  # [29]
-        "D3": False,  # [30]
-        "D4": False,  # [31]
-        "Y1": False,  # Leap year
-        "Y3": False   # 0 <= year <= 9999 and year % 4 != 0 (Normal year)
+        "M1": 0,  # [1, 3, 5, 7, 8, 10, 12]
+        "M2": 0,  # [4, 6, 9, 11]
+        "M3": 0,  # [2]
+        "D1": 0,  # 1 <= day <= 28
+        "D2": 0,  # [29]
+        "D3": 0,  # [30]
+        "D4": 0,  # [31]
+        "Y1": 0,  # Leap year
+        "Y3": 0   # 0 <= year <= 9999 and year % 4 != 0 (Normal year)
     }
     invalid_equivalence_classes_covered = {
-        "M4": False,  # month < 1
-        "M5": False,  # month > 12
-        "D5": False,  # day < 1
-        "D6": False,  # day > 31
-        "Y4": False,  # year < 0
-        "Y5": False   # year > 9999
+        "M5": 0,  # month > 12
+        "D6": 0,  # day > 31
+        "Y5": 0   # year > 9999
     }
-    
-    redundantCases=0
     for testCase in testCases:
         day = int(testCase.dateString[0:2])
         month = int(testCase.dateString[3:5])
         year = int(testCase.dateString[6:10])
-        uniqueClassesCovered=0
-        if testCase.isValid:
-            if day>=1 and day<=28: 
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"D1",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
-            elif day==29: 
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"D2",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
+        classesCovered = []
 
-            elif day==30: 
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"D3",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases) 
-                
-            elif day==31: 
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"D4",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
+        if testCase.isValid:
+            if 1 <= day <= 28:
+                classesCovered.append("D1")
+            elif day == 29:
+                classesCovered.append("D2")
+            elif day == 30:
+                classesCovered.append("D3")
+            elif day == 31:
+                classesCovered.append("D4")
+
             if month in [1, 3, 5, 7, 8, 10, 12]:
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"M1",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
+                classesCovered.append("M1")
             elif month in [4, 6, 9, 11]:
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"M2",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
+                classesCovered.append("M2")
             elif month == 2:
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"M3",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
+                classesCovered.append("M3")
 
             if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):  # Leap year
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"Y1",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
+                classesCovered.append("Y1")
             else:
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"Y3",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
-
+                classesCovered.append("Y3")
+        
         else:
             if month > 12:
-                uniqueClassesCovered,redundantCases=isUniqueClass(invalid_equivalence_classes_covered,"M5",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-
+                classesCovered.append("M5")
             if day > 31:
-                uniqueClassesCovered,redundantCases=isUniqueClass(invalid_equivalence_classes_covered,"D6",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
+                classesCovered.append("D6")
+                
+            if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0) and day == 29:
+                classesCovered.append("Y5")
+                
+        eachTestCaseClassCoverage.append(classesCovered)
+    
+    for classesCovered in eachTestCaseClassCoverage:
+        for classe in classesCovered:
+            if classe in valid_equivalence_classes_covered:
+                valid_equivalence_classes_covered[classe] += 1
+            elif classe in invalid_equivalence_classes_covered:
+                invalid_equivalence_classes_covered[classe] += 1
 
-            
-            if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0) and day==29:
-                uniqueClassesCovered,redundantCases=isUniqueClass(invalid_equivalence_classes_covered,"Y5",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-        testCase.fitness=uniqueClassesCovered/(1+redundantCases)
+    
+    for i in range(len(testCases)):
+        valid_classes_covered = 0
+        invalid_classes_covered = 0
         
-        
+        for classe in eachTestCaseClassCoverage[i]:
+            if classe in valid_equivalence_classes_covered:
+                valid_classes_covered += 1
+            elif classe in invalid_equivalence_classes_covered:
+                invalid_classes_covered += 1
+        total_classes_covered = valid_classes_covered + invalid_classes_covered
+        testCases[i].fitness = len(eachTestCaseClassCoverage[i]) / (1 + total_classes_covered)
 
-def isUniqueClass(equivalence_classes_covered,key,uniqueClassesCovered,redundantCases):
+def isUniqueClass(equivalence_classes_covered,key,uniqueClassesCovered):
 
     if not equivalence_classes_covered[key]: 
         equivalence_classes_covered[key]=True 
         uniqueClassesCovered+=1
-    else:
-        redundantCases+=1
-    return uniqueClassesCovered,redundantCases
+    return uniqueClassesCovered
 
 def isUniqueClassCoverage(equivalence_classes_covered,key):
 
@@ -230,13 +233,13 @@ def calculate_coverage(testCases):
 def main():
     populationLength=50
     testCases=populate(populationLength)
-    numOfGenerations=100
+    numOfGenerations=0
     coverage=0.0
-    while(numOfGenerations>=0 and coverage<0.96):
+    while(numOfGenerations<100 and coverage<0.96):
         fitness(testCases=testCases)
         select_survivors(testCases,populationLength=populationLength)
         randomly_vary_individual(testCases,populationLength)
-        numOfGenerations-=1
+        numOfGenerations+=1
         coverage=calculate_coverage(testCases)
     print("Generations:",numOfGenerations)
     print("Final coverage: ",coverage)
