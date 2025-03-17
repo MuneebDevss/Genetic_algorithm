@@ -1,0 +1,26 @@
+Type,Date,Categories
+Valid,24/06/3141,Valid (31 days month)
+Valid,31/08/7816,Valid (30 days Month)
+Valid,27/02/7716,Valid (28 days month)
+Valid,30/11/7716,Valid (31 days month)
+Valid,30/07/7816,"Valid (30 days Month), Boundary Case"
+Valid,30/06/7716,Valid (31 days month)
+Valid,27/07/3141,Valid (30 days Month)
+Valid,31/05/7716,Valid (30 days Month)
+Valid,27/06/7716,Valid (31 days month)
+Valid,24/07/3141,Valid (30 days Month)
+Invalid,30/15/7816,Invalid month
+Invalid,36/08/3241,Invalid days
+Invalid,30/02/7716,
+Invalid,48/05/7716,Invalid days
+Invalid,31/06/3441,Boundary Case
+Invalid,33/14/7716,"Invalid days, Invalid month"
+Invalid,33/07/8116,Invalid days
+Invalid,33/12/7816,Invalid days
+Invalid,36/04/8016,Invalid days
+Invalid,37/08/7816,Invalid days
+Boundary,31/06/3441,Boundary Case
+Boundary,30/07/7816,"Valid (30 days Month), Boundary Case"
+Boundary,31/04/7816,Boundary Case
+Boundary,30/07/7716,"Valid (30 days Month), Boundary Case"
+Boundary,31/06/7716,Boundary Case

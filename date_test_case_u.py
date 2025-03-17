@@ -1,82 +1,68 @@
 from utility_functions import is_valid_date
 import random
-
+import csv
+from utility_functions import get_date_category_with_explanation 
 class TestCase:
     def __init__(self, dateString, fitness, isValid):
         self.dateString = dateString
         self.fitness=fitness
         self.isValid = isValid
+def get_date_category(day, month, year,isValid):
+    categories = []
+    if isValid:
+        if 1 <= day <= 28:
+            categories.append("D1")
+        elif day == 29:
+            categories.append("D2")
+        elif day == 30:
+            categories.append("D3")
+        elif day == 31:
+            categories.append("D4")
 
-def fitness(testCases):
-    valid_equivalence_classes_covered = {
-        "M1": False,  # [1, 3, 5, 7, 8, 10, 12]
-        "M2": False,  # [4, 6, 9, 11]
-        "M3": False,  # [2]
-        "D1": False,  # 1 <= day <= 28
-        "D2": False,  # [29]
-        "D3": False,  # [30]
-        "D4": False,  # [31]
-        "Y1": False,  # Leap year
-        "Y3": False,   # 0 <= year <= 9999 and year % 4 != 0 (Normal year)
-        "B1":False,
-        "B2":False
-    }
-    invalid_equivalence_classes_covered = {
-        "M4": False,  # month < 1
-        "M5": False,  # month > 12
-        "D5": False,  # day < 1
-        "D6": False,  # day > 31
-        "Y4": False,  # year < 0
-        "Y5": False   # year > 9999
-    }
-    
+        if month in [1, 3, 5, 7, 8, 10, 12]:
+            categories.append("M1")
+        elif month in [4, 6, 9, 11]:
+            categories.append("M2")
+        elif month == 2:
+            categories.append("M3")
+        
+        if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):
+            categories.append("Y1")  # Leap year
+        
+        else:
+            categories.append("Y3")
+    else:
+        if day>31:
+             categories.append("D6")
+        if month > 12:
+            categories.append("M5")
+        if year>9999:
+            categories.append("Y5")
+    return categories
+
+def get_date_category_by_boundry(day, month, year):
+    categories = []
+    if (day == 30 and month in [1, 3, 5, 7, 8, 10, 12]) or (day == 31 and month in [4, 6, 9, 11]) or ((day == 29 and month == 2)):
+            categories.append("B1")
+    if year==0000 and month==1 and day==1:
+        categories.append("B2")
+    if year == 0 and month == 1 and day == 1:
+        categories.append("B3")
+    return categories
+
+def fitness(testCases,valid_equivalence_classes_covered,invalid_equivalence_classes_covered,boundry_classes_covered):    
     redundantCases=0
     for testCase in testCases:
-        day = int(testCase.dateString[0:2])
-        month = int(testCase.dateString[3:5])
-        year = int(testCase.dateString[6:10])
+        day,month,year = map(int,(testCase.dateString.split('/')))
         uniqueClassesCovered=0
-        if testCase.isValid:
-            if day>=1 and day<=28: 
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"D1",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
-            elif day==29: 
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"D2",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
+        for category in get_date_category(day,month,year,testCase.isValid):
+            if testCase.isValid:
+                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,category,uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
+            else:            
+                uniqueClassesCovered,redundantCases=isUniqueClass(invalid_equivalence_classes_covered,category,uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
 
-            elif day==30: 
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"D3",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases) 
-                
-            elif day==31: 
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"D4",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
-            if month in [1, 3, 5, 7, 8, 10, 12]:
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"M1",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
-            elif month in [4, 6, 9, 11]:
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"M2",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
-            elif month == 2:
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"M3",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
-
-            if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):  # Leap year
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"Y1",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-                
-            else:
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"Y3",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-            if (day==30 and month in [1, 3, 5, 7, 8, 10, 12])  or (day==29 and month==2):
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"B1",uniqueClassesCovered,redundantCases)
-            elif (day==31 and month in [4, 6, 9, 11]):
-                uniqueClassesCovered,redundantCases=isUniqueClass(valid_equivalence_classes_covered,"B2",uniqueClassesCovered,redundantCases)
-        else:
-            if month > 12:
-                uniqueClassesCovered,redundantCases=isUniqueClass(invalid_equivalence_classes_covered,"M5",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
-
-            if day > 31:
-                uniqueClassesCovered,redundantCases=isUniqueClass(invalid_equivalence_classes_covered,"D6",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)            
-            if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0) and day==29:
-                uniqueClassesCovered,redundantCases=isUniqueClass(invalid_equivalence_classes_covered,"Y5",uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
+        for category in get_date_category_by_boundry(day,month,year):
+            uniqueClassesCovered,redundantCases=isUniqueClass(boundry_classes_covered,category,uniqueClassesCovered=uniqueClassesCovered,redundantCases=redundantCases)
         testCase.fitness=uniqueClassesCovered/(1+redundantCases)
         
         
@@ -90,44 +76,59 @@ def isUniqueClass(equivalence_classes_covered,key,uniqueClassesCovered,redundant
         redundantCases+=1
     return uniqueClassesCovered,redundantCases
 
-def isUniqueClassCoverage(equivalence_classes_covered,key):
-
-    if not equivalence_classes_covered[key]: 
-        equivalence_classes_covered[key]=True 
-
-def print_test_cases(testCases):
+def print_test_cases(testCases,coverage):
     valid_cases = []
     invalid_cases = []
     boundary_cases = []
 
     for testCase in testCases:
         day, month, year = map(int, testCase.dateString.split("/"))  # Extract day, month, and year
+        categories = get_date_category_with_explanation(day, month, year, testCase.isValid)  # Get categories
 
         if testCase.isValid:
-            valid_cases.append(testCase)
+            valid_cases.append((testCase.dateString, categories))
         else:
-            invalid_cases.append(testCase)
+            invalid_cases.append((testCase.dateString, categories))
 
-        # Check if it's a boundary case (Leap year with day == 29)
-        if ((day==30 and month in [1, 3, 5, 7, 8, 10, 12])  or (day==29 and month==2)or (day==31 and month in [4, 6, 9, 11])) :
-            boundary_cases.append(testCase)
+        # Check if it's a boundary case
+        if "Boundary Case" in categories or "Boundry Case (Minimum)" in categories or "Boundry Case (Maximum)" in categories:
+            boundary_cases.append((testCase.dateString, categories))
 
-    # Print up to 10 valid cases
-    print("\nValid Test Cases:")
-    for testCase in valid_cases[:10]:
-        print(f"Test Case: {testCase.dateString}")
+    # Print best test cases
+    print("\nBest Test Cases:")
 
-    # Print up to 10 invalid cases
-    print("\nInvalid Test Cases:")
-    for testCase in invalid_cases[:10]:
-        print(f"Test Case: {testCase.dateString}")
+    # Print valid cases in required format
+    print("Valid:", "".join(f"\n{date} ({', '.join(categories)})" for date, categories in valid_cases[:10]))
+    print("\n")
+    # Print invalid cases in required format
+    print("Invalid:", "".join(f"\n{date} ({', '.join(categories)})" for date, categories in invalid_cases[:10]))
+    print("\n")
 
-    # Print up to 5 boundary cases
-    print("\nBoundary Test Cases:")
-    for testCase in boundary_cases[:5]:
-        print(f"Test Case: {testCase.dateString}")
+    # Print boundary cases in required format
+    print("Boundary:", "".join(f"\n{date} ({', '.join(categories)})" for date, categories in boundary_cases[:5]))
+    print("\n")
 
-
+    
+    #writing data into the file
+    
+    if coverage > 0.7:
+        with open('university_records.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            
+            # Write header
+            writer.writerow(["Type", "Date", "Categories"])
+            
+            # Write valid cases
+            for date, categories in valid_cases[:10]:
+                writer.writerow(["Valid", date, ", ".join(categories)])
+            
+            # Write invalid cases
+            for date, categories in invalid_cases[:10]:
+                writer.writerow(["Invalid", date, ", ".join(categories)])
+            
+            # Write boundary cases
+            for date, categories in boundary_cases[:5]:
+                writer.writerow(["Boundary", date, ", ".join(categories)])
 
 
 #function tp generate the population of dates
@@ -168,16 +169,10 @@ def mutate(testCases):
     for i in range(len(testCases)):
     
         if random.randrange(0,100) < 15:
-            changeType=random.randrange(1,3)
-            day = int(testCases[i].dateString[0:2])
-            month = int(testCases[i].dateString[3:5])
-            year = int(testCases[i].dateString[6:10])
-            if changeType==1:
-                day+=3
-            elif changeType==2:
-                month+=1
-            else:
-                year+=100
+            day, month, year = map(int, testCases[i].dateString.split("/"))
+            day+=3
+            month+=1
+            year+=100
             day = '0' + str(day) if day < 10 else str(day)
             month = '0'+str(month) if month < 10 else str(month)
             year = ('0'*(4-len(str(year))))+str(year)
@@ -200,7 +195,17 @@ def crossOver(testCases, populationLength):
         testCases[i] = TestCase(new_date_1, 0, is_valid_date(new_date_1))
         testCases[i + 1] = TestCase(new_date_2, 0, is_valid_date(new_date_2))
 
-def calculate_coverage(testCases):
+def calculate_coverage(testCases,valid_equivalence_classes_covered,invalid_equivalence_classes_covered,boundry_classes_covered):
+    uniqueValidClasses = sum(1 for unique in valid_equivalence_classes_covered.values() if unique)
+    uniqueInvalidClasses = sum(1 for unique in invalid_equivalence_classes_covered.values() if unique)
+    uniqueBoundryClasses = sum(1 for unique in boundry_classes_covered.values() if unique)
+    return (uniqueValidClasses+uniqueInvalidClasses+uniqueBoundryClasses)/15
+
+def main():
+    
+        genetic_algorithm()
+
+def genetic_algorithm():
     valid_equivalence_classes_covered = {
         "M1": False,  # [1, 3, 5, 7, 8, 10, 12]
         "M2": False,  # [4, 6, 9, 11]
@@ -211,76 +216,33 @@ def calculate_coverage(testCases):
         "D4": False,  # [31]
         "Y1": False,  # Leap year
         "Y3": False,   # 0 <= year <= 9999 and year % 4 != 0 (Normal year)
-        "B1":False,
-        "B2":False,
     }
     invalid_equivalence_classes_covered = {
-        "M5": False,         
-        "D6": False, 
-        "Y5": False  
+        "M5": False,  # month > 12
+        "D6": False,  # day > 31
+        "Y5": False   # year > 9999
     }
-    for testCase in testCases:
-        day = int(testCase.dateString[0:2])
-        month = int(testCase.dateString[3:5])
-        year = int(testCase.dateString[6:10])
-        
-        if testCase.isValid:
-            if day >= 1 and day <= 28:
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "D1")
-            elif day == 29:
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "D2")
-            elif day == 30:
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "D3")
-            elif day == 31:
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "D4")
-
-            if month in [1, 3, 5, 7, 8, 10, 12]:
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "M1")
-            elif month in [4, 6, 9, 11]:
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "M2")
-            elif month == 2:
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "M3")
-
-            if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):  # Leap year
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "Y1")
-            else:
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "Y3")
-            if (day==30 and month in [1, 3, 5, 7, 8, 10, 12])  or (day==29 and month==2):
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "B1")
-            elif (day==31 and month in [4, 6, 9, 11]):
-                isUniqueClassCoverage(valid_equivalence_classes_covered, "B2")
-
-    else:
-        if month > 12:
-            isUniqueClassCoverage(invalid_equivalence_classes_covered, "M5")
-        if day > 31:
-            isUniqueClassCoverage(invalid_equivalence_classes_covered, "D6")
-        if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0) and day == 29:
-            isUniqueClassCoverage(invalid_equivalence_classes_covered, "Y5")
-        
-    
-    uniqueValidClasses = sum(1 for unique in valid_equivalence_classes_covered.values() if unique)
-    uniqueInvalidClasses = sum(1 for unique in invalid_equivalence_classes_covered.values() if unique)
-
-    return (uniqueValidClasses+uniqueInvalidClasses)/13
-
-def main():
-        genetic_algorithm()
-
-def genetic_algorithm():
+    boundry_classes_covered={
+        "B1":False,
+        "B2":False,
+        "B3":False,
+    }
     populationLength=50
     testCases=populate(populationLength)
     numOfGenerations=0
     coverage=0.0
     while(numOfGenerations<100 and coverage<0.96):
-        fitness(testCases=testCases)
+        fitness(testCases,valid_equivalence_classes_covered,invalid_equivalence_classes_covered,boundry_classes_covered)
         select_survivors(testCases,populationLength=populationLength)
         randomly_vary_individual(testCases,populationLength)
         numOfGenerations+=1
-        coverage=calculate_coverage(testCases)
+        coverage=calculate_coverage(testCases,valid_equivalence_classes_covered,invalid_equivalence_classes_covered,boundry_classes_covered)
+        valid_equivalence_classes_covered = {key: False for key in valid_equivalence_classes_covered}
+        invalid_equivalence_classes_covered = {key: False for key in invalid_equivalence_classes_covered}
+        boundry_classes_covered = {key: False for key in boundry_classes_covered}
     print("Generations:",numOfGenerations)
     print("Final coverage: ",coverage*100,"%")
-    print_test_cases(testCases)
+    print_test_cases(testCases,coverage)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,33 @@
 import re
+def get_date_category_with_explanation(day, month, year,isValid):
+    categories = []
+    if isValid:
+        if day == 29:
+            categories.append("Valid (Leap year)")
 
+        if month in [1, 3, 5, 7, 8, 10, 12]:
+            categories.append("Valid (30 days Month)")
+        elif month in [4, 6, 9, 11]:
+            categories.append("Valid (31 days month)")
+        elif month == 2:
+            categories.append("Valid (28 days month)")
+        
+    else:
+        if day>31:
+             categories.append("Invalid days")
+        if month > 12:
+            categories.append("Invalid month")
+        if year>9999:
+            categories.append("Invalid year")
+    
+    
+    if (day == 30 and month in [1, 3, 5, 7, 8, 10, 12]) or (day == 31 and month in [4, 6, 9, 11]) or ((day == 29 and month == 2)):
+            categories.append("Boundary Case")
+    if year==0000 and month==1 and day==1:
+        categories.append("Boundry Case (Minimum)")
+    if year == 0 and month == 1 and day == 1:
+        categories.append("Boundry Case (Maximum)")
+    return categories
 def is_valid_date(date_str):
     """
     Validates a date string in DD/MM/YYYY format.
